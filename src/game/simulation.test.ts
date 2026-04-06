@@ -6,9 +6,13 @@ import {
   applyFertilizer,
   buyExpandGrid,
   buyFertilizer,
+  buyRations,
+  convertCropBagToRations,
   createInitialState,
+  enterWinterPhase,
   harvestCell,
   placeSeed,
+  resolveWinterChoice,
   sellAllCrops,
   tick,
 } from "./simulation";
@@ -101,6 +105,41 @@ describe("harvest quota", () => {
     expect(s.yearPhase).toBe("winter");
     expect(s.paused).toBe(true);
     expect(s.harvestsRemaining).toBe(0);
+    expect(s.winterDay).toBe(1);
+    expect(s.health).toBeGreaterThan(0);
+    expect(s.winterEventId).not.toBe("");
+    expect(s.winterMinigameComplete).toBe(false);
+  });
+});
+
+describe("rations and winter", () => {
+  it("buyRations adds rations during spring", () => {
+    let s = createInitialState("carrot");
+    s = { ...s, money: 100 };
+    s = buyRations(s, 3);
+    expect(s.rations).toBe(3);
+    expect(s.money).toBe(100 - 30);
+  });
+
+  it("convertCropBagToRations moves bag units to rations", () => {
+    let s = createInitialState("carrot");
+    s = { ...s, cropBag: { carrot: 2 } };
+    s = convertCropBagToRations(s);
+    expect(s.rations).toBe(2);
+    expect(s.cropBag.carrot ?? 0).toBe(0);
+  });
+
+  it("completes winter after 10 event choices with enough rations", () => {
+    let s = createInitialState("carrot");
+    s = { ...s, yearPhase: "fall", harvestsRemaining: 0, rations: 20 };
+    s = enterWinterPhase(s);
+    expect(s.winterDay).toBe(1);
+    let guard = 0;
+    while (!s.winterMinigameComplete && !s.winterFailed && guard++ < 30) {
+      s = resolveWinterChoice(s, 0);
+    }
+    expect(s.winterMinigameComplete).toBe(true);
+    expect(s.winterFailed).toBe(false);
   });
 });
 
@@ -157,8 +196,8 @@ describe("fertilizers", () => {
     fast = placeSeed(fast, 0, 0, "carrot");
     fast = { ...fast, fertilizerInventory: { sprout_rush: 1 } };
     fast = applyFertilizer(fast, 0, 0, "sprout_rush");
-    base = tick(base, 10_000);
-    fast = tick(fast, 10_000);
+    base = tick(base, 400);
+    fast = tick(fast, 400);
     expect(fast.grid[0][0]!.progress).toBeGreaterThan(base.grid[0][0]!.progress);
   });
 
@@ -184,8 +223,8 @@ describe("bean chain", () => {
     s = placeSeed(s, 0, 1, "bean");
     const beanBefore = s.grid[0][1]!;
     expect(beanBefore.progress).toBe(0);
-    // One long tick matures both plants in the same frame and skips the bean chain; step so carrot finishes first.
-    s = tick(s, 18_000);
+    // Carrot finishes in ~1000ms; bean needs longer. A huge tick matures both in one frame and skips the chain.
+    s = tick(s, 1100);
     expect(s.grid[0][0]?.mature).toBe(true);
     const beanAfter = s.grid[0][1]!;
     expect(beanAfter.progress).toBeGreaterThan(0.15);

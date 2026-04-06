@@ -37,7 +37,7 @@ export const SEEDS: Record<string, SeedDefinition> = {
     description:
       "A reliable root crop. Grows at a steady pace with no special grid effects—use it to fill space or learn the basics.",
     color: "#e67e22",
-    growDurationMs: 18_000,
+    growDurationMs: 1_000,
     sellPrice: 8,
     shopPrice: 2,
   },
@@ -47,7 +47,7 @@ export const SEEDS: Record<string, SeedDefinition> = {
     description:
       "Vines that share the wealth. Each tomato speeds up plants in the four tiles directly next to it (up, down, left, right).",
     color: "#c0392b",
-    growDurationMs: 22_000,
+    growDurationMs: 2_000,
     sellPrice: 14,
     shopPrice: 20,
     orthoNeighborGrowthBonus: 0.12,
@@ -58,7 +58,7 @@ export const SEEDS: Record<string, SeedDefinition> = {
     description:
       "Soaks up sunlight and shares it. Other plants within two steps (Manhattan distance) grow a bit faster—great for clustered gardens.",
     color: "#f1c40f",
-    growDurationMs: 25_000,
+    growDurationMs: 2_000,
     sellPrice: 16,
     shopPrice: 22,
     aura: { radius: 2, growthBonus: 0.06 },
@@ -69,7 +69,7 @@ export const SEEDS: Record<string, SeedDefinition> = {
     description:
       "Climbs when neighbors finish. When a plant directly next to a bean finishes growing, the bean gets a burst of progress—chains can cascade.",
     color: "#27ae60",
-    growDurationMs: 20_000,
+    growDurationMs: 2_000,
     sellPrice: 12,
     shopPrice: 18,
     chainMatureProgress: 0.18,
@@ -80,7 +80,7 @@ export const SEEDS: Record<string, SeedDefinition> = {
     description:
       "Heavy and hungry for space. Slows plants directly next to it, but harvests for a high price—place with care.",
     color: "#d35400",
-    growDurationMs: 28_000,
+    growDurationMs: 2_000,
     sellPrice: 28,
     shopPrice: 40,
     orthoNeighborGrowthMult: 0.88,

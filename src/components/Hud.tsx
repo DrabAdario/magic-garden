@@ -1,8 +1,8 @@
 import FastForwardIcon from "@mui/icons-material/FastForward";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import StorefrontIcon from "@mui/icons-material/Storefront";
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import type { YearPhase } from "../game/types";
 
@@ -17,12 +17,13 @@ type Props = {
   yearPhase: YearPhase;
   seasonEarnings: number;
   cropBagTotal: number;
+  rations: number;
   harvestsRemaining: number;
   paused: boolean;
   seasonEnded: boolean;
   onPauseToggle: () => void;
   onSell: () => void;
-  onOpenShop: () => void;
+  onPackRations: () => void;
   onAdvanceSeasonEarly: () => void;
 };
 
@@ -30,12 +31,13 @@ export function Hud({
   yearPhase,
   seasonEarnings,
   cropBagTotal,
+  rations,
   harvestsRemaining,
   paused,
   seasonEnded,
   onPauseToggle,
   onSell,
-  onOpenShop,
+  onPackRations,
   onAdvanceSeasonEarly,
 }: Props) {
   const growing = yearPhase === "spring" || yearPhase === "summer" || yearPhase === "fall";
@@ -74,18 +76,11 @@ export function Hud({
         >
           Harvests <strong>{harvestsRemaining}</strong>
         </Typography>
+        <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
+          Rations <strong>{rations}</strong>
+        </Typography>
         <Box sx={{ flexGrow: 1 }} />
         <Stack direction="row" flexWrap="wrap" gap={0.75} useFlexGap>
-          <Button
-            variant="outlined"
-            color="primary"
-            size="small"
-            startIcon={<StorefrontIcon />}
-            onClick={onOpenShop}
-            disabled={seasonEnded || !growing}
-          >
-            Shop
-          </Button>
           <Button
             variant="outlined"
             size="small"
@@ -105,6 +100,16 @@ export function Hud({
             disabled={seasonEnded || !growing || cropBagTotal === 0}
           >
             Sell crops
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="small"
+            startIcon={<RestaurantIcon />}
+            onClick={onPackRations}
+            disabled={seasonEnded || !growing || cropBagTotal === 0}
+          >
+            Pack rations
           </Button>
           <Button
             variant="outlined"

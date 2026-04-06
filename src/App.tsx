@@ -6,9 +6,9 @@ import { GameBoard } from "./components/GameBoard";
 import { Hud } from "./components/Hud";
 import { SavesWipScreen } from "./components/SavesWipScreen";
 import { ScoreScreen } from "./components/ScoreScreen";
-import { WinterWipScreen } from "./components/WinterWipScreen";
+import { WinterGameScreen } from "./components/WinterGameScreen";
 import { SeedPalette } from "./components/SeedPalette";
-import { ShopModal } from "./components/ShopModal";
+import { ShopPanel } from "./components/ShopPanel";
 import { StarterSeedDialog } from "./components/StarterSeedDialog";
 import { StartScreen } from "./components/StartScreen";
 import { backgroundForYearPhase } from "./game/seasonBackgrounds";
@@ -16,12 +16,14 @@ import {
   advanceSeasonEarly,
   applyFertilizer,
   computeSeasonScore,
+  convertCropBagToRations,
   createInitialState,
   finalizeYearToScoreScreen,
   harvestCell,
   isGrowingSeason,
   pickRandomStarterSeedId,
   placeSeed,
+  resolveWinterChoice,
   sellAllCrops,
   tick,
 } from "./game/simulation";
@@ -36,7 +38,6 @@ type AppScreen = "start" | "saves-wip" | "play";
 export function App() {
   const [appScreen, setAppScreen] = useState<AppScreen>("start");
   const [game, setGame] = useState(() => createInitialState("carrot"));
-  const [shopOpen, setShopOpen] = useState(false);
   const [selectedSeed, setSelectedSeed] = useState("carrot");
   const [selectedFertilizer, setSelectedFertilizer] = useState<string | null>(null);
   const [starterGiftSeedId, setStarterGiftSeedId] = useState<string | null>(null);
@@ -89,6 +90,14 @@ export function App() {
     setGame((g) => advanceSeasonEarly(g));
   }, []);
 
+  const onPackRations = useCallback(() => {
+    setGame((g) => convertCropBagToRations(g));
+  }, []);
+
+  const onWinterChoice = useCallback((choiceIndex: 0 | 1) => {
+    setGame((g) => resolveWinterChoice(g, choiceIndex));
+  }, []);
+
   const onViewYearResults = useCallback(() => {
     setGame((g) => finalizeYearToScoreScreen(g));
   }, []);
@@ -97,7 +106,6 @@ export function App() {
     const id = pickRandomStarterSeedId();
     setGame(createInitialState(id));
     setSelectedSeed(id);
-    setShopOpen(false);
     setStarterGiftSeedId(id);
   }, []);
 
@@ -105,7 +113,6 @@ export function App() {
     const id = pickRandomStarterSeedId();
     setGame(createInitialState(id));
     setSelectedSeed(id);
-    setShopOpen(false);
     setStarterGiftSeedId(id);
     setAppScreen("play");
   }, []);
@@ -145,7 +152,7 @@ export function App() {
   if (game.yearPhase === "winter") {
     return (
       <Stack sx={{ flex: 1, minHeight: "100dvh", bgcolor: backgroundForYearPhase("winter") }}>
-        <WinterWipScreen onViewResults={onViewYearResults} />
+        <WinterGameScreen game={game} onChoice={onWinterChoice} onViewResults={onViewYearResults} />
       </Stack>
     );
   }
@@ -170,19 +177,14 @@ export function App() {
           yearPhase={game.yearPhase}
           seasonEarnings={game.seasonEarnings}
           cropBagTotal={bagTotal}
+          rations={game.rations}
           harvestsRemaining={game.harvestsRemaining}
           paused={game.paused}
           seasonEnded={game.seasonEnded}
           onPauseToggle={togglePause}
           onSell={onSell}
-          onOpenShop={() => setShopOpen(true)}
+          onPackRations={onPackRations}
           onAdvanceSeasonEarly={onAdvanceSeasonEarly}
-        />
-        <ShopModal
-          open={shopOpen}
-          game={game}
-          onClose={() => setShopOpen(false)}
-          onApply={applyShop}
         />
         <StarterSeedDialog seedId={starterGiftSeedId} onClose={() => setStarterGiftSeedId(null)} />
         <Box
@@ -195,19 +197,23 @@ export function App() {
             alignItems: { xs: "stretch", md: "flex-start" },
           }}
         >
+          <Box sx={{ order: { xs: 1, md: 0 }, width: { md: "auto" } }}>
+            <ShopPanel game={game} onApply={applyShop} />
+          </Box>
           <Stack
             spacing={1.5}
             sx={{
               flex: 1,
               minWidth: 0,
               minHeight: 0,
-              order: { xs: 2, md: 0 },
+              order: { xs: 3, md: 0 },
             }}
           >
             <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
               <strong>Spring</strong> (20) → <strong>summer</strong> (25) → <strong>fall</strong> (10) →{" "}
-              <strong>winter</strong>. Each harvest uses one tick; sell crops from the bar. Backpack shows
-              everything you carry. <strong>End season early</strong> skips to the next phase.
+              <strong>winter</strong> (survival choices — one ration per day). Shop on the left, backpack on the
+              right. Sell crops or <strong>pack rations</strong>. <strong>End season early</strong> skips to the
+              next phase.
             </Typography>
             <GameBoard
               grid={game.grid}
@@ -233,9 +239,10 @@ export function App() {
               disabled={game.paused}
             />
           </Stack>
-          <Box sx={{ order: { xs: 1, md: 0 }, width: { md: "auto" } }}>
+          <Box sx={{ order: { xs: 2, md: 0 }, width: { md: "auto" } }}>
             <BackpackInventory
               money={game.money}
+              rations={game.rations}
               cropBag={game.cropBag}
               seedInventory={game.inventory}
               fertilizerInventory={game.fertilizerInventory}

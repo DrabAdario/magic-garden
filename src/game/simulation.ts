@@ -8,6 +8,12 @@ import {
 import { fertilizerGrowthMult, fertilizerHarvestExtra, FERTILIZERS } from "./fertilizers";
 import { canExpandGrid, expandGridCost } from "./shop";
 import { getSeed, growthMultiplierAt, SEED_ORDER, SEEDS } from "./seeds";
+import {
+  buyRations,
+  convertCropBagToRations,
+  enterWinterPhase,
+  resolveWinterChoice,
+} from "./winterSimulation";
 
 /** Spring, summer, or fall — active garden. Winter is the minigame interlude. */
 export function isGrowingSeason(state: GameState): boolean {
@@ -46,6 +52,12 @@ export function createInitialState(starterSeedId: string = pickRandomStarterSeed
     harvestCropUnitsTotal: 0,
     yearPhase: "spring",
     yearHarvestActionsTotal: 0,
+    rations: 0,
+    health: 100,
+    winterDay: 0,
+    winterEventId: "",
+    winterMinigameComplete: false,
+    winterFailed: false,
   };
 }
 
@@ -204,12 +216,7 @@ export function transitionGrowingPhase(state: GameState): GameState {
     };
   }
   if (s.yearPhase === "fall") {
-    return {
-      ...s,
-      yearPhase: "winter",
-      harvestsRemaining: 0,
-      paused: true,
-    };
+    return enterWinterPhase(s);
   }
   return s;
 }
@@ -220,8 +227,10 @@ export function advanceSeasonEarly(state: GameState): GameState {
   return transitionGrowingPhase(state);
 }
 
-/** Call after winter WIP when the player is ready for year-end stats. */
+/** Call after winter when the player is ready for year-end stats. */
 export function finalizeYearToScoreScreen(state: GameState): GameState {
+  if (state.yearPhase !== "winter") return state;
+  if (!state.winterMinigameComplete && !state.winterFailed) return state;
   return { ...state, seasonEnded: true, paused: true };
 }
 
@@ -411,5 +420,11 @@ export function computeSeasonScore(state: GameState): SeasonScore {
     tilesWithSynergyGrowth: state.peakSynergyTiles,
     harvestActionsCompleted: state.yearHarvestActionsTotal,
     cropUnitsHarvested: state.harvestCropUnitsTotal,
+    winterSurvived: !state.winterFailed,
+    winterHealthEnd: state.health,
+    winterRationsEnd: state.rations,
   };
 }
+
+export { buyRations, convertCropBagToRations, enterWinterPhase, resolveWinterChoice };
+export { RATION_SHOP_PRICE } from "./winterConstants";

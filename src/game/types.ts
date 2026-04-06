@@ -25,6 +25,10 @@ export interface SeasonScore {
   harvestActionsCompleted: number;
   /** Total crop units added to bag from harvests (includes fertilizer extras) */
   cropUnitsHarvested: number;
+  /** Winter survival outcome (year-end snapshot). */
+  winterSurvived: boolean;
+  winterHealthEnd: number;
+  winterRationsEnd: number;
 }
 
 export interface GameState {
@@ -54,4 +58,13 @@ export interface GameState {
   yearPhase: YearPhase;
   /** Counts every player harvest tap across spring, summer, and fall */
   yearHarvestActionsTotal: number;
+  /** Preserved food for winter; 1 consumed each winter morning */
+  rations: number;
+  /** 0–100; starvation and events change this in winter */
+  health: number;
+  /** 1..WINTER_DAY_COUNT while in winter, else 0 */
+  winterDay: number;
+  winterEventId: string;
+  winterMinigameComplete: boolean;
+  winterFailed: boolean;
 }

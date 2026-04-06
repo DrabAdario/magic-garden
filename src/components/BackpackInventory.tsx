@@ -2,9 +2,11 @@ import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
 import { FERTILIZER_ORDER, FERTILIZERS } from "../game/fertilizers";
 import { SEED_ORDER, SEEDS } from "../game/seeds";
+import { sidePanelPaperSx } from "./sidePanelStyles";
 
 type Props = {
   money: number;
+  rations: number;
   cropBag: Record<string, number>;
   seedInventory: Record<string, number>;
   fertilizerInventory: Record<string, number>;
@@ -63,6 +65,7 @@ function Row({
 
 export function BackpackInventory({
   money,
+  rations,
   cropBag,
   seedInventory,
   fertilizerInventory,
@@ -74,18 +77,7 @@ export function BackpackInventory({
       component="aside"
       elevation={0}
       aria-label="Backpack inventory"
-      sx={{
-        border: 1,
-        borderColor: "divider",
-        borderRadius: 2,
-        display: "flex",
-        flexDirection: "column",
-        maxHeight: { xs: 320, md: "min(72dvh, 560px)" },
-        width: { xs: "100%", md: 268 },
-        flexShrink: 0,
-        alignSelf: { xs: "stretch", md: "flex-start" },
-        bgcolor: "background.paper",
-      }}
+      sx={sidePanelPaperSx}
     >
       <Box
         sx={{
@@ -109,10 +101,21 @@ export function BackpackInventory({
 
       <Box sx={{ overflow: "auto", px: 1.25, py: 1, flex: 1, minHeight: 0 }}>
         <Typography variant="overline" color="primary.main" sx={{ fontWeight: 800, letterSpacing: 0.06 }}>
+          Rations
+        </Typography>
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.75, lineHeight: 1.35 }}>
+          Preserved food for winter ({rations} day{rations !== 1 ? "s" : ""}). Pack from harvested crops or buy in the
+          shop.
+        </Typography>
+        <Typography variant="body2" fontWeight={800} sx={{ fontVariantNumeric: "tabular-nums", mb: 1.25 }}>
+          ×{rations}
+        </Typography>
+
+        <Typography variant="overline" color="primary.main" sx={{ fontWeight: 800, letterSpacing: 0.06 }}>
           Harvested
         </Typography>
         <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.75, lineHeight: 1.35 }}>
-          Crops in your pack ({cropTotal} unit{cropTotal !== 1 ? "s" : ""}). Sell from the bar for coins.
+          Crops in your pack ({cropTotal} unit{cropTotal !== 1 ? "s" : ""}). Sell or pack into rations from the bar.
         </Typography>
         <Stack spacing={0}>
           {SEED_ORDER.map((id) => {

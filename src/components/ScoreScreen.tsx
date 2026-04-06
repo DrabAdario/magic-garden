@@ -58,6 +58,9 @@ export function ScoreScreen({ score, onNewSeason }: Props) {
             ["Crops sold", score.cropsSold],
             ["Chain pulses", score.synergyEvents],
             ["Peak synergy tiles", score.tilesWithSynergyGrowth],
+            ["Winter survived", score.winterSurvived ? "Yes" : "No"],
+            ["Winter health (end)", score.winterHealthEnd],
+            ["Rations (end)", score.winterRationsEnd],
           ].map(([label, val]) => (
             <Stack
               key={String(label)}
