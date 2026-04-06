@@ -1,0 +1,6 @@
+/* Minimal globals; layout and components use MUI. */
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
