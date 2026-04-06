@@ -5,16 +5,20 @@ import { GameBoard } from "./components/GameBoard";
 import { Hud } from "./components/Hud";
 import { SavesWipScreen } from "./components/SavesWipScreen";
 import { ScoreScreen } from "./components/ScoreScreen";
+import { WinterWipScreen } from "./components/WinterWipScreen";
 import { SeedPalette } from "./components/SeedPalette";
 import { ShopModal } from "./components/ShopModal";
 import { StarterSeedDialog } from "./components/StarterSeedDialog";
 import { StartScreen } from "./components/StartScreen";
+import { backgroundForYearPhase } from "./game/seasonBackgrounds";
 import {
+  advanceSeasonEarly,
   applyFertilizer,
   computeSeasonScore,
   createInitialState,
-  endSeason,
+  finalizeYearToScoreScreen,
   harvestCell,
+  isGrowingSeason,
   pickRandomStarterSeedId,
   placeSeed,
   sellAllCrops,
@@ -47,7 +51,7 @@ export function App() {
       last = now;
       const dt = Math.min(Math.max(raw, 0), 80);
       const g = gameRef.current;
-      if (!g.paused && !g.seasonEnded) {
+      if (!g.paused && !g.seasonEnded && isGrowingSeason(g)) {
         setGame((prev) => tick(prev, dt));
       }
       raf = requestAnimationFrame(loop);
@@ -59,7 +63,7 @@ export function App() {
   const onCellTap = useCallback(
     (row: number, col: number) => {
       setGame((g) => {
-        if (g.seasonEnded || g.paused) return g;
+        if (g.seasonEnded || g.paused || !isGrowingSeason(g)) return g;
         if (selectedFertilizer) {
           return applyFertilizer(g, row, col, selectedFertilizer);
         }
@@ -80,8 +84,12 @@ export function App() {
     setGame((g) => sellAllCrops(g));
   }, []);
 
-  const onEndSeason = useCallback(() => {
-    setGame((g) => endSeason(g));
+  const onAdvanceSeasonEarly = useCallback(() => {
+    setGame((g) => advanceSeasonEarly(g));
+  }, []);
+
+  const onViewYearResults = useCallback(() => {
+    setGame((g) => finalizeYearToScoreScreen(g));
   }, []);
 
   const onNewSeason = useCallback(() => {
@@ -133,6 +141,14 @@ export function App() {
     );
   }
 
+  if (game.yearPhase === "winter") {
+    return (
+      <Stack sx={{ flex: 1, minHeight: "100dvh", bgcolor: backgroundForYearPhase("winter") }}>
+        <WinterWipScreen onViewResults={onViewYearResults} />
+      </Stack>
+    );
+  }
+
   return (
     <Container
       maxWidth="sm"
@@ -145,20 +161,22 @@ export function App() {
         py: 1.5,
         pb: "max(12px, env(safe-area-inset-bottom))",
         minHeight: "100dvh",
-        bgcolor: "background.default",
+        bgcolor: backgroundForYearPhase(game.yearPhase),
       }}
     >
       <Stack spacing={1.5} sx={{ flex: 1, minHeight: 0 }}>
         <Hud
+          yearPhase={game.yearPhase}
           money={game.money}
           seasonEarnings={game.seasonEarnings}
           cropBagTotal={bagTotal}
+          harvestsRemaining={game.harvestsRemaining}
           paused={game.paused}
           seasonEnded={game.seasonEnded}
           onPauseToggle={togglePause}
           onSell={onSell}
-          onEndSeason={onEndSeason}
           onOpenShop={() => setShopOpen(true)}
+          onAdvanceSeasonEarly={onAdvanceSeasonEarly}
         />
         <ShopModal
           open={shopOpen}
@@ -168,8 +186,9 @@ export function App() {
         />
         <StarterSeedDialog seedId={starterGiftSeedId} onClose={() => setStarterGiftSeedId(null)} />
         <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
-          Plant seeds on empty soil, or choose a fertilizer and tap a <strong>growing</strong> plant.
-          Harvest when ready, then <strong>Sell crops</strong>. Buy more in the shop.
+          <strong>Spring</strong> (20) → <strong>summer</strong> (25) → <strong>fall</strong> (10) →{" "}
+          <strong>winter</strong>. Each harvest uses one tick; sell anytime for shop coins.{" "}
+          <strong>End season early</strong> skips to the next phase.
         </Typography>
         <GameBoard
           grid={game.grid}

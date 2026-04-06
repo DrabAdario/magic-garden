@@ -1,33 +1,47 @@
-import FlagIcon from "@mui/icons-material/Flag";
+import FastForwardIcon from "@mui/icons-material/FastForward";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
+import type { YearPhase } from "../game/types";
+
+const PHASE_LABEL: Record<YearPhase, string> = {
+  spring: "Spring",
+  summer: "Summer",
+  fall: "Fall",
+  winter: "Winter",
+};
 
 type Props = {
+  yearPhase: YearPhase;
   money: number;
   seasonEarnings: number;
   cropBagTotal: number;
+  harvestsRemaining: number;
   paused: boolean;
   seasonEnded: boolean;
   onPauseToggle: () => void;
   onSell: () => void;
-  onEndSeason: () => void;
   onOpenShop: () => void;
+  onAdvanceSeasonEarly: () => void;
 };
 
 export function Hud({
+  yearPhase,
   money,
   seasonEarnings,
   cropBagTotal,
+  harvestsRemaining,
   paused,
   seasonEnded,
   onPauseToggle,
   onSell,
-  onEndSeason,
   onOpenShop,
+  onAdvanceSeasonEarly,
 }: Props) {
+  const growing = yearPhase === "spring" || yearPhase === "summer" || yearPhase === "fall";
+
   return (
     <Paper
       component="header"
@@ -49,14 +63,24 @@ export function Hud({
         <Typography variant="h6" component="h1" sx={{ fontWeight: 800, letterSpacing: 0.02 }}>
           Magic Garden
         </Typography>
+        <Typography variant="body2" color="secondary.main" sx={{ fontWeight: 700 }}>
+          {PHASE_LABEL[yearPhase]}
+        </Typography>
         <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
           Coins <strong>{money}</strong>
         </Typography>
         <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-          Season <strong>{seasonEarnings}</strong>
+          Year <strong>{seasonEarnings}</strong>
         </Typography>
         <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
           Bag <strong>{cropBagTotal}</strong>
+        </Typography>
+        <Typography
+          variant="body2"
+          color="secondary.main"
+          sx={{ fontVariantNumeric: "tabular-nums", fontWeight: 700 }}
+        >
+          Harvests <strong>{harvestsRemaining}</strong>
         </Typography>
         <Box sx={{ flexGrow: 1 }} />
         <Stack direction="row" flexWrap="wrap" gap={0.75} useFlexGap>
@@ -66,7 +90,7 @@ export function Hud({
             size="small"
             startIcon={<StorefrontIcon />}
             onClick={onOpenShop}
-            disabled={seasonEnded}
+            disabled={seasonEnded || !growing}
           >
             Shop
           </Button>
@@ -75,7 +99,7 @@ export function Hud({
             size="small"
             startIcon={paused ? <PlayArrowIcon /> : <PauseIcon />}
             onClick={onPauseToggle}
-            disabled={seasonEnded}
+            disabled={seasonEnded || !growing}
             aria-pressed={paused}
           >
             {paused ? "Resume" : "Pause"}
@@ -86,19 +110,19 @@ export function Hud({
             size="small"
             startIcon={<ShoppingCartIcon />}
             onClick={onSell}
-            disabled={seasonEnded || cropBagTotal === 0}
+            disabled={seasonEnded || !growing || cropBagTotal === 0}
           >
             Sell crops
           </Button>
           <Button
             variant="outlined"
-            color="error"
+            color="warning"
             size="small"
-            startIcon={<FlagIcon />}
-            onClick={onEndSeason}
-            disabled={seasonEnded}
+            startIcon={<FastForwardIcon />}
+            onClick={onAdvanceSeasonEarly}
+            disabled={seasonEnded || !growing}
           >
-            End season
+            End season early
           </Button>
         </Stack>
       </Stack>

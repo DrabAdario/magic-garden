@@ -1,3 +1,4 @@
+import { HARVEST_QUOTA_BY_PHASE } from "./seasons";
 import {
   STARTING_GRID_SIZE,
   type GameState,
@@ -7,6 +8,14 @@ import {
 import { fertilizerGrowthMult, fertilizerHarvestExtra, FERTILIZERS } from "./fertilizers";
 import { canExpandGrid, expandGridCost } from "./shop";
 import { getSeed, growthMultiplierAt, SEED_ORDER, SEEDS } from "./seeds";
+
+/** Spring, summer, or fall — active garden. Winter is the minigame interlude. */
+export function isGrowingSeason(state: GameState): boolean {
+  return (
+    !state.seasonEnded &&
+    (state.yearPhase === "spring" || state.yearPhase === "summer" || state.yearPhase === "fall")
+  );
+}
 
 export function emptyGrid(size: number): (PlantedCell | null)[][] {
   return Array.from({ length: size }, () =>
@@ -33,6 +42,10 @@ export function createInitialState(starterSeedId: string = pickRandomStarterSeed
     seasonEarnings: 0,
     totalCropsSold: 0,
     peakSynergyTiles: 0,
+    harvestsRemaining: HARVEST_QUOTA_BY_PHASE.spring,
+    harvestCropUnitsTotal: 0,
+    yearPhase: "spring",
+    yearHarvestActionsTotal: 0,
   };
 }
 
@@ -65,7 +78,7 @@ export function placeSeed(
   col: number,
   seedId: string,
 ): GameState {
-  if (state.seasonEnded) return state;
+  if (!isGrowingSeason(state)) return state;
   const h = state.grid.length;
   const w = state.grid[0]?.length ?? 0;
   if (row < 0 || row >= h || col < 0 || col >= w) return state;
@@ -88,8 +101,16 @@ export function placeSeed(
   return next;
 }
 
-export function harvestCell(state: GameState, row: number, col: number): GameState {
-  if (state.seasonEnded) return state;
+/**
+ * Core harvest: move crop to bag. `countQuota` false for end-of-season auto-pick (does not spend quota).
+ */
+function harvestCellImpl(
+  state: GameState,
+  row: number,
+  col: number,
+  countQuota: boolean,
+): GameState {
+  if (state.seasonEnded || (countQuota && !isGrowingSeason(state))) return state;
   const cell = state.grid[row]?.[col];
   if (!cell || !cell.mature) return state;
 
@@ -100,8 +121,26 @@ export function harvestCell(state: GameState, row: number, col: number): GameSta
   };
   const id = cell.seedId;
   const extra = fertilizerHarvestExtra(cell.fertilizerId);
-  next.cropBag[id] = (next.cropBag[id] ?? 0) + 1 + extra;
+  const units = 1 + extra;
+  next.cropBag[id] = (next.cropBag[id] ?? 0) + units;
   next.grid[row][col] = null;
+  if (countQuota) {
+    next.harvestsRemaining = Math.max(0, state.harvestsRemaining - 1);
+    next.harvestCropUnitsTotal = state.harvestCropUnitsTotal + units;
+    next.yearHarvestActionsTotal = state.yearHarvestActionsTotal + 1;
+  }
+  return next;
+}
+
+/** Player harvest: spends one quota tick; at 0 → next growing phase or winter. */
+export function harvestCell(state: GameState, row: number, col: number): GameState {
+  if (!isGrowingSeason(state)) return state;
+  if (state.harvestsRemaining <= 0) return state;
+  const next = harvestCellImpl(state, row, col, true);
+  if (next === state) return state;
+  if (next.harvestsRemaining === 0) {
+    return transitionGrowingPhase(next);
+  }
   return next;
 }
 
@@ -135,18 +174,55 @@ export function harvestAllMature(state: GameState): GameState {
   for (let r = 0; r < h; r++) {
     for (let c = 0; c < w; c++) {
       if (s.grid[r][c]?.mature) {
-        s = harvestCell(s, r, c);
+        s = harvestCellImpl(s, r, c, false);
       }
     }
   }
   return s;
 }
 
-export function endSeason(state: GameState): GameState {
-  if (state.seasonEnded) return state;
+/**
+ * Pick any remaining mature crops, sell the bag, then move to the next growing phase or winter.
+ */
+export function transitionGrowingPhase(state: GameState): GameState {
   let s = harvestAllMature(state);
   s = sellAllCrops(s);
-  return { ...s, seasonEnded: true, paused: true };
+  if (s.yearPhase === "spring") {
+    return {
+      ...s,
+      yearPhase: "summer",
+      harvestsRemaining: HARVEST_QUOTA_BY_PHASE.summer,
+      paused: false,
+    };
+  }
+  if (s.yearPhase === "summer") {
+    return {
+      ...s,
+      yearPhase: "fall",
+      harvestsRemaining: HARVEST_QUOTA_BY_PHASE.fall,
+      paused: false,
+    };
+  }
+  if (s.yearPhase === "fall") {
+    return {
+      ...s,
+      yearPhase: "winter",
+      harvestsRemaining: 0,
+      paused: true,
+    };
+  }
+  return s;
+}
+
+/** End the current growing phase early (spring / summer / fall) and advance. */
+export function advanceSeasonEarly(state: GameState): GameState {
+  if (state.seasonEnded || !isGrowingSeason(state)) return state;
+  return transitionGrowingPhase(state);
+}
+
+/** Call after winter WIP when the player is ready for year-end stats. */
+export function finalizeYearToScoreScreen(state: GameState): GameState {
+  return { ...state, seasonEnded: true, paused: true };
 }
 
 const ORTHO: [number, number][] = [
@@ -169,7 +245,7 @@ function expandGridSquare(grid: (PlantedCell | null)[][]): (PlantedCell | null)[
 
 /** Add one row and one column; pay `expandGridCost(currentSize)`. */
 export function buyExpandGrid(state: GameState): GameState {
-  if (state.seasonEnded) return state;
+  if (state.seasonEnded || !isGrowingSeason(state)) return state;
   const n = state.grid.length;
   if (!canExpandGrid(n)) return state;
   const cost = expandGridCost(n);
@@ -182,7 +258,7 @@ export function buyExpandGrid(state: GameState): GameState {
 }
 
 export function buySeedPack(state: GameState, seedId: string, qty: number): GameState {
-  if (state.seasonEnded || qty <= 0) return state;
+  if (state.seasonEnded || !isGrowingSeason(state) || qty <= 0) return state;
   const def = SEEDS[seedId];
   if (!def) return state;
   const cost = def.shopPrice * qty;
@@ -197,7 +273,7 @@ export function buySeedPack(state: GameState, seedId: string, qty: number): Game
 }
 
 export function buyFertilizer(state: GameState, fertilizerId: string, qty: number): GameState {
-  if (state.seasonEnded || qty <= 0) return state;
+  if (state.seasonEnded || !isGrowingSeason(state) || qty <= 0) return state;
   const def = FERTILIZERS[fertilizerId];
   if (!def) return state;
   const cost = def.shopPrice * qty;
@@ -218,7 +294,7 @@ export function applyFertilizer(
   col: number,
   fertilizerId: string,
 ): GameState {
-  if (state.seasonEnded) return state;
+  if (state.seasonEnded || !isGrowingSeason(state)) return state;
   if (!FERTILIZERS[fertilizerId]) return state;
   if ((state.fertilizerInventory[fertilizerId] ?? 0) <= 0) return state;
   const h = state.grid.length;
@@ -282,7 +358,7 @@ function applyMatureChains(
 }
 
 export function tick(state: GameState, deltaMs: number): GameState {
-  if (state.paused || state.seasonEnded || deltaMs <= 0) return state;
+  if (state.paused || state.seasonEnded || !isGrowingSeason(state) || deltaMs <= 0) return state;
 
   let grid = cloneGrid(state.grid);
   let synergyEvents = state.synergyEvents;
@@ -333,5 +409,7 @@ export function computeSeasonScore(state: GameState): SeasonScore {
     synergyEvents: state.synergyEvents,
     cropsSold: state.totalCropsSold,
     tilesWithSynergyGrowth: state.peakSynergyTiles,
+    harvestActionsCompleted: state.yearHarvestActionsTotal,
+    cropUnitsHarvested: state.harvestCropUnitsTotal,
   };
 }
