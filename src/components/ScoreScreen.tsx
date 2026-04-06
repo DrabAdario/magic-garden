@@ -39,10 +39,10 @@ export function ScoreScreen({ score, onNewSeason }: Props) {
         }}
       >
         <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 700 }}>
-          Season complete
+          Year complete
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          No fail state — chill run. Here is how you did.
+          Spring, summer, fall — then winter wraps up. Here is your year in the garden.
         </Typography>
         <Typography variant="h6" sx={{ my: 1 }}>
           Rank:{" "}
@@ -50,8 +50,10 @@ export function ScoreScreen({ score, onNewSeason }: Props) {
             {rank}
           </Box>
         </Typography>
-        <Stack spacing={0.75} sx={{ maxWidth: 280, mx: "auto", my: 2, textAlign: "left" }}>
+        <Stack spacing={0.75} sx={{ maxWidth: 300, mx: "auto", my: 2, textAlign: "left" }}>
           {[
+            ["Harvest actions", score.harvestActionsCompleted],
+            ["Crop units picked", score.cropUnitsHarvested],
             ["Coins earned", score.totalEarnings],
             ["Crops sold", score.cropsSold],
             ["Chain pulses", score.synergyEvents],

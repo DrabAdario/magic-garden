@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { HARVEST_QUOTA_BY_PHASE } from "./seasons";
 import { FERTILIZERS } from "./fertilizers";
 import {
+  advanceSeasonEarly,
   applyFertilizer,
   buyExpandGrid,
   buyFertilizer,
   createInitialState,
-  endSeason,
   harvestCell,
   placeSeed,
   sellAllCrops,
@@ -57,10 +58,15 @@ describe("tick", () => {
 describe("harvest and sell", () => {
   it("moves mature crop to bag and sell adds money", () => {
     let s = createInitialState("carrot");
+    expect(s.harvestsRemaining).toBe(HARVEST_QUOTA_BY_PHASE.spring);
+    expect(s.yearPhase).toBe("spring");
     s = placeSeed(s, 0, 0, "carrot");
     s = tick(s, 20_000);
     expect(s.grid[0][0]?.mature).toBe(true);
     s = harvestCell(s, 0, 0);
+    expect(s.harvestsRemaining).toBe(HARVEST_QUOTA_BY_PHASE.spring - 1);
+    expect(s.yearHarvestActionsTotal).toBe(1);
+    expect(s.harvestCropUnitsTotal).toBe(1);
     expect(s.cropBag.carrot).toBe(1);
     expect(s.grid[0][0]).toBeNull();
     s = sellAllCrops(s);
@@ -70,15 +76,31 @@ describe("harvest and sell", () => {
   });
 });
 
-describe("endSeason", () => {
-  it("sells bag and ends", () => {
+describe("advanceSeasonEarly", () => {
+  it("sells bag and moves spring to summer", () => {
     let s = createInitialState("carrot");
     s = placeSeed(s, 0, 0, "carrot");
     s = tick(s, 20_000);
     s = harvestCell(s, 0, 0);
-    s = endSeason(s);
-    expect(s.seasonEnded).toBe(true);
+    expect(s.cropBag.carrot).toBe(1);
+    s = advanceSeasonEarly(s);
+    expect(s.yearPhase).toBe("summer");
+    expect(s.harvestsRemaining).toBe(HARVEST_QUOTA_BY_PHASE.summer);
     expect(s.money).toBe(8);
+    expect(s.cropBag.carrot).toBe(0);
+  });
+});
+
+describe("harvest quota", () => {
+  it("enters winter when fall quota is exhausted", () => {
+    let s = createInitialState("carrot");
+    s = { ...s, yearPhase: "fall", harvestsRemaining: 1 };
+    s = placeSeed(s, 0, 0, "carrot");
+    s = tick(s, 20_000);
+    s = harvestCell(s, 0, 0);
+    expect(s.yearPhase).toBe("winter");
+    expect(s.paused).toBe(true);
+    expect(s.harvestsRemaining).toBe(0);
   });
 });
 
