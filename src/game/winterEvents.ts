@@ -3,6 +3,8 @@ export type WinterChoice = {
   healthDelta: number;
   rationsDelta: number;
   moneyDelta: number;
+  /** Adds this species to your roster for next year (no effect if already unlocked). */
+  unlockSeedId?: string;
 };
 
 export type WinterEventDef = {
@@ -55,9 +57,15 @@ export const WINTER_EVENTS: WinterEventDef[] = [
   },
   {
     id: "traveler",
-    text: "A merchant’s sleigh tips in the drift. They offer a trinket for help digging them out.",
+    text: "A merchant’s sleigh tips in the drift. They offer a trinket for help digging them out—and press a few climbing seeds into your palm.",
     choices: [
-      { label: "Help for free", healthDelta: -6, rationsDelta: 0, moneyDelta: 12 },
+      {
+        label: "Help for free",
+        healthDelta: -6,
+        rationsDelta: 0,
+        moneyDelta: 12,
+        unlockSeedId: "bean",
+      },
       { label: "Refuse—you’re low on strength", healthDelta: 0, rationsDelta: 0, moneyDelta: 0 },
     ],
   },
@@ -91,6 +99,66 @@ export const WINTER_EVENTS: WinterEventDef[] = [
     choices: [
       { label: "Trade one ration", healthDelta: 6, rationsDelta: -1, moneyDelta: 0 },
       { label: "Send them home empty", healthDelta: -8, rationsDelta: 0, moneyDelta: 0 },
+    ],
+  },
+  {
+    id: "library_seed",
+    text: "A book falls open to a pressed leaf—between the pages, seeds rattle like tiny wishes.",
+    choices: [
+      {
+        label: "The big orange rounds (pumpkin)",
+        healthDelta: 0,
+        rationsDelta: 0,
+        moneyDelta: 0,
+        unlockSeedId: "pumpkin",
+      },
+      {
+        label: "The crookneck squash",
+        healthDelta: 0,
+        rationsDelta: 0,
+        moneyDelta: 0,
+        unlockSeedId: "squash",
+      },
+    ],
+  },
+  {
+    id: "heirloom_packet",
+    text: "Behind the larder a mouse has stashed a crumpled packet—seeds still dry inside.",
+    choices: [
+      {
+        label: "Deep purple globes (eggplant)",
+        healthDelta: 0,
+        rationsDelta: 0,
+        moneyDelta: 0,
+        unlockSeedId: "eggplant",
+      },
+      {
+        label: "Orange-fleshed roots (sweet potato)",
+        healthDelta: 0,
+        rationsDelta: 0,
+        moneyDelta: 0,
+        unlockSeedId: "sweet_potato",
+      },
+    ],
+  },
+  {
+    id: "peddler",
+    text: "A peddler in furs taps the glass. 'Rare starts—one coin of kindness.' They press a damp bundle into your palm.",
+    choices: [
+      {
+        label: "Climbing vines (cucumber)",
+        healthDelta: -2,
+        rationsDelta: 0,
+        moneyDelta: 0,
+        unlockSeedId: "cucumber",
+      },
+      {
+        label: "Knobby tubers (potato)",
+        healthDelta: -2,
+        rationsDelta: 0,
+        moneyDelta: 0,
+        unlockSeedId: "potato",
+      },
     ],
   },
 ];

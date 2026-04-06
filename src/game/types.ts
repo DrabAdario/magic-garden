@@ -1,7 +1,7 @@
 import type { YearPhase } from "./seasons";
 
 /** New games start with a small plot; the shop can expand up to `MAX_GRID_SIZE`. */
-export const STARTING_GRID_SIZE = 4;
+export const STARTING_GRID_SIZE = 1;
 export const MAX_GRID_SIZE = 8;
 
 export type { YearPhase };
@@ -58,6 +58,8 @@ export interface GameState {
   yearPhase: YearPhase;
   /** Counts every player harvest tap across spring, summer, and fall */
   yearHarvestActionsTotal: number;
+  /** Which plant species can be planted / bought as seed packs (shop unlock or event). */
+  unlockedSeeds: Record<string, boolean>;
   /** Preserved food for winter; 1 consumed each winter morning */
   rations: number;
   /** 0–100; starvation and events change this in winter */

@@ -11,6 +11,7 @@ import {
   gridSize,
   isGrowingSeason,
   RATION_SHOP_PRICE,
+  unlockSeedFromShop,
 } from "../game/simulation";
 import { MAX_GRID_SIZE } from "../game/types";
 import type { GameState } from "../game/types";
@@ -35,6 +36,11 @@ export function ShopPanel({ game, onApply }: Props) {
 
   const tryBuySeed = (seedId: string) => {
     const next = buySeedPack(game, seedId, 1);
+    if (next !== game) onApply(next);
+  };
+
+  const tryUnlockSeed = (seedId: string) => {
+    const next = unlockSeedFromShop(game, seedId);
     if (next !== game) onApply(next);
   };
 
@@ -192,7 +198,12 @@ export function ShopPanel({ game, onApply }: Props) {
         <Stack spacing={1}>
           {SEED_ORDER.map((id) => {
             const def = SEEDS[id];
-            const affordable = game.money >= def.shopPrice;
+            const unlocked = game.unlockedSeeds[id] ?? false;
+            const needsUnlock = def.unlockShopPrice !== undefined;
+            const locked = needsUnlock && !unlocked;
+            const unlockCost = def.unlockShopPrice ?? 0;
+            const canAffordUnlock = game.money >= unlockCost;
+            const canAffordPack = game.money >= def.shopPrice;
             return (
               <Paper key={id} elevation={0} variant="outlined" sx={{ p: 1 }}>
                 <Stack direction="row" alignItems="center" gap={0.75} sx={{ mb: 0.5 }}>
@@ -206,25 +217,44 @@ export function ShopPanel({ game, onApply }: Props) {
                       border: 1,
                       borderColor: "divider",
                       flexShrink: 0,
+                      opacity: locked ? 0.55 : 1,
                     }}
                   />
                   <Typography variant="caption" fontWeight={700} noWrap sx={{ minWidth: 0 }}>
                     {def.name}
+                    {locked ? " · locked" : ""}
                   </Typography>
                 </Stack>
-                <Typography variant="caption" color="text.secondary" sx={{ display: "block", lineHeight: 1.35, mb: 0.75 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block", lineHeight: 1.35, mb: 0.75 }}
+                >
                   {def.description}
                 </Typography>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  fullWidth
-                  disabled={!affordable || shopDisabled}
-                  onClick={() => tryBuySeed(id)}
-                >
-                  {def.shopPrice} coins
-                </Button>
+                {locked ? (
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    size="small"
+                    fullWidth
+                    disabled={!canAffordUnlock || shopDisabled}
+                    onClick={() => tryUnlockSeed(id)}
+                  >
+                    Unlock species · {unlockCost} coins
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    fullWidth
+                    disabled={!canAffordPack || shopDisabled}
+                    onClick={() => tryBuySeed(id)}
+                  >
+                    Buy 1 seed · {def.shopPrice} coins
+                  </Button>
+                )}
               </Paper>
             );
           })}

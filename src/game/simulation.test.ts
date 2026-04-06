@@ -7,26 +7,29 @@ import {
   buyExpandGrid,
   buyFertilizer,
   buyRations,
+  buySeedPack,
   convertCropBagToRations,
   createInitialState,
+  emptyGrid,
   enterWinterPhase,
   harvestCell,
   placeSeed,
   resolveWinterChoice,
   sellAllCrops,
   tick,
+  unlockSeedFromShop,
 } from "./simulation";
 import { growthMultiplierAt } from "./seeds";
 
 describe("growthMultiplierAt", () => {
   it("is 1 for isolated carrot", () => {
-    const grid = createInitialState("carrot").grid;
+    const grid = emptyGrid(5);
     grid[2][2] = { seedId: "carrot", progress: 0, mature: false };
     expect(growthMultiplierAt(grid, 2, 2)).toBe(1);
   });
 
   it("increases with ortho tomato neighbor", () => {
-    const grid = createInitialState("carrot").grid;
+    const grid = emptyGrid(5);
     grid[2][2] = { seedId: "carrot", progress: 0, mature: false };
     grid[2][3] = { seedId: "tomato", progress: 0, mature: false };
     const m = growthMultiplierAt(grid, 2, 2);
@@ -34,7 +37,7 @@ describe("growthMultiplierAt", () => {
   });
 
   it("applies pumpkin slow to ortho neighbors", () => {
-    const grid = createInitialState("carrot").grid;
+    const grid = emptyGrid(5);
     grid[2][2] = { seedId: "carrot", progress: 0, mature: false };
     grid[3][2] = { seedId: "pumpkin", progress: 0, mature: false };
     const m = growthMultiplierAt(grid, 2, 2);
@@ -159,8 +162,8 @@ describe("shop expand", () => {
     let s = createInitialState("carrot");
     s = { ...s, money: 100 };
     s = buyExpandGrid(s);
-    expect(s.grid.length).toBe(5);
-    expect(s.grid[0]?.length).toBe(5);
+    expect(s.grid.length).toBe(2);
+    expect(s.grid[0]?.length).toBe(2);
     expect(s.money).toBe(75);
   });
 
@@ -212,11 +215,32 @@ describe("fertilizers", () => {
   });
 });
 
+describe("seed unlocks", () => {
+  it("unlockSeedFromShop allows buying seed packs", () => {
+    let s = createInitialState("carrot");
+    s = { ...s, money: 200 };
+    s = unlockSeedFromShop(s, "bean");
+    expect(s.unlockedSeeds.bean).toBe(true);
+    expect(s.money).toBe(200 - 85);
+    s = buySeedPack(s, "bean", 1);
+    expect(s.inventory.bean).toBe(1);
+  });
+
+  it("blocks placeSeed until species is unlocked", () => {
+    let s = createInitialState("carrot");
+    s = { ...s, inventory: { carrot: 0, bean: 1 } };
+    const blocked = placeSeed(s, 0, 0, "bean");
+    expect(blocked).toBe(s);
+  });
+});
+
 describe("bean chain", () => {
   it("gives bean a progress boost when ortho neighbor matures", () => {
     let s = createInitialState("carrot");
     s = {
       ...s,
+      grid: emptyGrid(4),
+      unlockedSeeds: { ...s.unlockedSeeds, bean: true },
       inventory: { ...s.inventory, carrot: 1, bean: 1 },
     };
     s = placeSeed(s, 0, 0, "carrot");

@@ -27,6 +27,7 @@ import {
   sellAllCrops,
   tick,
 } from "./game/simulation";
+import { SEED_ORDER } from "./game/seeds";
 import type { GameState } from "./game/types";
 
 function bagCount(bag: Record<string, number>): number {
@@ -121,6 +122,12 @@ export function App() {
     setGame(next);
   }, []);
 
+  useEffect(() => {
+    if (!game.unlockedSeeds[selectedSeed]) {
+      setSelectedSeed(SEED_ORDER.find((id) => game.unlockedSeeds[id]) ?? "carrot");
+    }
+  }, [game, selectedSeed]);
+
   const score = useMemo(() => computeSeasonScore(game), [game]);
 
   const bagTotal = bagCount(game.cropBag);
@@ -211,9 +218,8 @@ export function App() {
           >
             <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
               <strong>Spring</strong> (20) → <strong>summer</strong> (25) → <strong>fall</strong> (10) →{" "}
-              <strong>winter</strong> (survival choices — one ration per day). Shop on the left, backpack on the
-              right. Sell crops or <strong>pack rations</strong>. <strong>End season early</strong> skips to the
-              next phase.
+              <strong>winter</strong> (survival choices — one ration per day). Shop: unlock new species (high cost),
+              then buy seeds. Carrot, tomato, and sunflower start unlocked.
             </Typography>
             <GameBoard
               grid={game.grid}
@@ -230,6 +236,7 @@ export function App() {
                 setSelectedSeed(id);
               }}
               inventory={game.inventory}
+              unlockedSeeds={game.unlockedSeeds}
               disabled={game.paused}
             />
             <FertilizerPalette

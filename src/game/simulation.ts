@@ -7,7 +7,13 @@ import {
 } from "./types";
 import { fertilizerGrowthMult, fertilizerHarvestExtra, FERTILIZERS } from "./fertilizers";
 import { canExpandGrid, expandGridCost } from "./shop";
-import { getSeed, growthMultiplierAt, SEED_ORDER, SEEDS } from "./seeds";
+import {
+  createInitialUnlockedSeeds,
+  getSeed,
+  growthMultiplierAt,
+  pickRandomStarterSeedId,
+  SEEDS,
+} from "./seeds";
 import {
   buyRations,
   convertCropBagToRations,
@@ -29,17 +35,20 @@ export function emptyGrid(size: number): (PlantedCell | null)[][] {
   );
 }
 
-/** Uniform random seed type for a new run or season. */
-export function pickRandomStarterSeedId(): string {
-  const i = Math.floor(Math.random() * SEED_ORDER.length);
-  return SEED_ORDER[i]!;
+export { pickRandomStarterSeedId };
+
+function normalizeStarterSeedId(starterSeedId: string): string {
+  const u = createInitialUnlockedSeeds();
+  if (u[starterSeedId]) return starterSeedId;
+  return "carrot";
 }
 
 export function createInitialState(starterSeedId: string = pickRandomStarterSeedId()): GameState {
+  const sid = normalizeStarterSeedId(starterSeedId);
   return {
     grid: emptyGrid(STARTING_GRID_SIZE),
     money: 0,
-    inventory: { [starterSeedId]: 1 },
+    inventory: { [sid]: 1 },
     fertilizerInventory: {},
     paused: false,
     cropBag: {},
@@ -52,6 +61,7 @@ export function createInitialState(starterSeedId: string = pickRandomStarterSeed
     harvestCropUnitsTotal: 0,
     yearPhase: "spring",
     yearHarvestActionsTotal: 0,
+    unlockedSeeds: createInitialUnlockedSeeds(),
     rations: 0,
     health: 100,
     winterDay: 0,
@@ -95,6 +105,7 @@ export function placeSeed(
   const w = state.grid[0]?.length ?? 0;
   if (row < 0 || row >= h || col < 0 || col >= w) return state;
   if (!SEEDS[seedId]) return state;
+  if (!state.unlockedSeeds[seedId]) return state;
   if (!canPlace(state, seedId)) return state;
   if (state.grid[row][col]) return state;
 
@@ -270,6 +281,7 @@ export function buySeedPack(state: GameState, seedId: string, qty: number): Game
   if (state.seasonEnded || !isGrowingSeason(state) || qty <= 0) return state;
   const def = SEEDS[seedId];
   if (!def) return state;
+  if (!state.unlockedSeeds[seedId]) return state;
   const cost = def.shopPrice * qty;
   if (state.money < cost) return state;
   const next: GameState = {
@@ -279,6 +291,20 @@ export function buySeedPack(state: GameState, seedId: string, qty: number): Game
   };
   next.inventory[seedId] = (next.inventory[seedId] ?? 0) + qty;
   return next;
+}
+
+/** One-time purchase to add a locked species to your roster (then buy seed packs as usual). */
+export function unlockSeedFromShop(state: GameState, seedId: string): GameState {
+  if (state.seasonEnded || !isGrowingSeason(state)) return state;
+  const def = SEEDS[seedId];
+  if (!def?.unlockShopPrice) return state;
+  if (state.unlockedSeeds[seedId]) return state;
+  if (state.money < def.unlockShopPrice) return state;
+  return {
+    ...state,
+    money: state.money - def.unlockShopPrice,
+    unlockedSeeds: { ...state.unlockedSeeds, [seedId]: true },
+  };
 }
 
 export function buyFertilizer(state: GameState, fertilizerId: string, qty: number): GameState {

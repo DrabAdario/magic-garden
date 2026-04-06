@@ -1,3 +1,4 @@
+import { SEEDS } from "./seeds";
 import type { GameState } from "./types";
 import {
   HEALTH_MAX,
@@ -44,12 +45,19 @@ function applyChoice(state: GameState, choiceIndex: number): GameState {
   if (!ev) return state;
   const ch = ev.choices[choiceIndex];
   if (!ch) return state;
-  return {
+  let s: GameState = {
     ...state,
     health: clampHealth(state.health + ch.healthDelta),
     rations: Math.max(0, state.rations + ch.rationsDelta),
     money: Math.max(0, state.money + ch.moneyDelta),
   };
+  if (ch.unlockSeedId && SEEDS[ch.unlockSeedId]) {
+    s = {
+      ...s,
+      unlockedSeeds: { ...s.unlockedSeeds, [ch.unlockSeedId]: true },
+    };
+  }
+  return s;
 }
 
 /**

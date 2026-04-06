@@ -10,8 +10,12 @@ export interface SeedDefinition {
   color: string;
   growDurationMs: number;
   sellPrice: number;
-  /** Cost per seed in the shop */
+  /** Cost per seed in the shop (after species is unlocked) */
   shopPrice: number;
+  /**
+   * One-time coins to add this species to your roster (shop). Omitted for free starter crops.
+   */
+  unlockShopPrice?: number;
   /** Bonus growth rate to orthogonal neighbors (additive), e.g. 0.1 = +10% speed */
   orthoNeighborGrowthBonus?: number;
   /** Manhattan radius aura: bonus growth per tick to others in range (excluding self) */
@@ -22,12 +26,20 @@ export interface SeedDefinition {
   orthoNeighborGrowthMult?: number;
 }
 
+/** Free at game start — all others must be unlocked in the shop or via events. */
+export const STARTER_UNLOCKED_SEED_IDS: readonly string[] = ["carrot", "tomato", "sunflower"];
+
 export const SEED_ORDER: readonly string[] = [
   "carrot",
   "tomato",
   "sunflower",
   "bean",
   "pumpkin",
+  "eggplant",
+  "cucumber",
+  "squash",
+  "potato",
+  "sweet_potato",
 ];
 
 export const SEEDS: Record<string, SeedDefinition> = {
@@ -72,6 +84,7 @@ export const SEEDS: Record<string, SeedDefinition> = {
     growDurationMs: 2_000,
     sellPrice: 12,
     shopPrice: 18,
+    unlockShopPrice: 85,
     chainMatureProgress: 0.18,
   },
   pumpkin: {
@@ -83,7 +96,67 @@ export const SEEDS: Record<string, SeedDefinition> = {
     growDurationMs: 2_000,
     sellPrice: 28,
     shopPrice: 40,
+    unlockShopPrice: 110,
     orthoNeighborGrowthMult: 0.88,
+  },
+  eggplant: {
+    id: "eggplant",
+    name: "Eggplant",
+    description:
+      "Deep purple and patient. Gives a modest boost to orthogonal neighbors—lighter touch than a tomato, steady in tight rows.",
+    color: "#6c3483",
+    growDurationMs: 2_200,
+    sellPrice: 18,
+    shopPrice: 24,
+    unlockShopPrice: 95,
+    orthoNeighborGrowthBonus: 0.08,
+  },
+  cucumber: {
+    id: "cucumber",
+    name: "Cucumber",
+    description:
+      "Quick-climbing vines. Grows fast and nudges neighbors along—good for filling edges and racing the season.",
+    color: "#58d68d",
+    growDurationMs: 1_800,
+    sellPrice: 11,
+    shopPrice: 16,
+    unlockShopPrice: 88,
+    orthoNeighborGrowthBonus: 0.06,
+  },
+  squash: {
+    id: "squash",
+    name: "Squash",
+    description:
+      "Spreading and heavy. Neighboring plants grow a bit slower, but the harvest pays well—like a gentler pumpkin.",
+    color: "#f39c12",
+    growDurationMs: 2_400,
+    sellPrice: 22,
+    shopPrice: 30,
+    unlockShopPrice: 102,
+    orthoNeighborGrowthMult: 0.93,
+  },
+  potato: {
+    id: "potato",
+    name: "Potato",
+    description:
+      "Understated tuber. No fancy grid tricks—just a fast cycle and solid coins for reliable plots.",
+    color: "#a569bd",
+    growDurationMs: 1_500,
+    sellPrice: 9,
+    shopPrice: 14,
+    unlockShopPrice: 82,
+  },
+  sweet_potato: {
+    id: "sweet_potato",
+    name: "Sweet potato",
+    description:
+      "Stores energy below ground and shares a little sun: plants one step away get a tiny growth bump.",
+    color: "#e59866",
+    growDurationMs: 2_000,
+    sellPrice: 15,
+    shopPrice: 21,
+    unlockShopPrice: 100,
+    aura: { radius: 1, growthBonus: 0.05 },
   },
 };
 
@@ -91,6 +164,27 @@ export function getSeed(id: string): SeedDefinition {
   const s = SEEDS[id];
   if (!s) throw new Error(`Unknown seed: ${id}`);
   return s;
+}
+
+/** True if this species is free at the start of a new year (not shop-locked). */
+export function isStarterUnlockedSeed(id: string): boolean {
+  return STARTER_UNLOCKED_SEED_IDS.includes(id);
+}
+
+/** Initial unlock map: starters true, all others false. */
+export function createInitialUnlockedSeeds(): Record<string, boolean> {
+  const u: Record<string, boolean> = {};
+  for (const id of SEED_ORDER) {
+    u[id] = isStarterUnlockedSeed(id);
+  }
+  return u;
+}
+
+/** Random starter pick — only from crops unlocked at game start. */
+export function pickRandomStarterSeedId(): string {
+  const pool = SEED_ORDER.filter((id) => isStarterUnlockedSeed(id));
+  const i = Math.floor(Math.random() * pool.length);
+  return pool[i]!;
 }
 
 /** Manhattan distance on grid */
@@ -124,7 +218,7 @@ export function growthMultiplierAt(
       if (ortho && def.orthoNeighborGrowthBonus) {
         add += def.orthoNeighborGrowthBonus;
       }
-      if (ortho && cell.seedId === "pumpkin" && def.orthoNeighborGrowthMult !== undefined) {
+      if (ortho && def.orthoNeighborGrowthMult !== undefined) {
         mult *= def.orthoNeighborGrowthMult;
       }
       if (def.aura && dist >= 1 && dist <= def.aura.radius) {

@@ -1,3 +1,4 @@
+import LockIcon from "@mui/icons-material/Lock";
 import { Box, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { SEED_ORDER, SEEDS } from "../game/seeds";
 
@@ -5,6 +6,7 @@ type Props = {
   selected: string;
   onSelect: (id: string) => void;
   inventory: Record<string, number>;
+  unlockedSeeds: Record<string, boolean>;
   disabled?: boolean;
 };
 
@@ -14,9 +16,10 @@ function formatDuration(ms: number): string {
   return `${s}s`;
 }
 
-export function SeedPalette({ selected, onSelect, inventory, disabled }: Props) {
+export function SeedPalette({ selected, onSelect, inventory, unlockedSeeds, disabled }: Props) {
   const detail = SEEDS[selected];
   const count = inventory[selected] ?? 0;
+  const selectedUnlocked = unlockedSeeds[selected] ?? false;
 
   return (
     <Stack
@@ -55,6 +58,11 @@ export function SeedPalette({ selected, onSelect, inventory, disabled }: Props) 
         <Typography variant="body2" sx={{ mb: 1, lineHeight: 1.45 }}>
           {detail.description}
         </Typography>
+        {!selectedUnlocked && (
+          <Typography variant="caption" color="warning.main" display="block" sx={{ mb: 0.75 }}>
+            Locked — unlock in the shop or find seeds during winter events.
+          </Typography>
+        )}
         <Typography variant="caption" color="text.secondary" display="block">
           Grows in ~{formatDuration(detail.growDurationMs)} · Sells for{" "}
           <strong>{detail.sellPrice}</strong> coins
@@ -99,23 +107,28 @@ export function SeedPalette({ selected, onSelect, inventory, disabled }: Props) 
             const def = SEEDS[id];
             const n = inventory[id] ?? 0;
             const out = n <= 0;
+            const locked = !(unlockedSeeds[id] ?? false);
             return (
               <ToggleButton
                 key={id}
                 value={id}
+                disabled={locked || disabled}
                 aria-describedby="seed-detail-panel"
                 sx={{
                   px: 1,
                   py: 0.5,
                   textTransform: "none",
                   gap: 0.5,
-                  opacity: out && selected !== id ? 0.65 : 1,
+                  opacity: locked ? 0.55 : out && selected !== id ? 0.65 : 1,
                   "&.Mui-selected": {
                     borderColor: out ? "text.secondary" : "primary.main",
                     bgcolor: out ? "action.selected" : "action.selected",
                   },
                 }}
               >
+                {locked && (
+                  <LockIcon sx={{ fontSize: 16, opacity: 0.8 }} aria-hidden />
+                )}
                 <Box
                   aria-hidden
                   sx={{
@@ -125,12 +138,13 @@ export function SeedPalette({ selected, onSelect, inventory, disabled }: Props) 
                     bgcolor: def.color,
                     border: "1px solid",
                     borderColor: "divider",
+                    opacity: locked ? 0.55 : 1,
                   }}
                 />
                 <Typography variant="body2" component="span" sx={{ fontWeight: 600 }}>
                   {def.name}{" "}
                   <Box component="span" sx={{ fontVariantNumeric: "tabular-nums" }}>
-                    {out ? "—" : `×${n}`}
+                    {locked ? "—" : out ? "—" : `×${n}`}
                   </Box>
                 </Typography>
               </ToggleButton>
