@@ -1,7 +1,9 @@
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import { Box, Button, Divider, Paper, Stack, Typography } from "@mui/material";
 import { FERTILIZER_ORDER, FERTILIZERS } from "../game/fertilizers";
+import { FERTILIZER_SPRITE_CELL, ICON_ATLAS, SEED_SPRITE_CELL } from "../game/spriteAssets";
 import { SEED_ORDER, SEEDS } from "../game/seeds";
+import { SpriteSheetIcon } from "./SpriteSheetIcon";
 import { canExpandGrid, expandGridCost } from "../game/shop";
 import {
   buyExpandGrid,
@@ -156,18 +158,28 @@ export function ShopPanel({ game, onApply }: Props) {
             return (
               <Paper key={id} elevation={0} variant="outlined" sx={{ p: 1 }}>
                 <Stack direction="row" alignItems="center" gap={0.75} sx={{ mb: 0.5 }}>
-                  <Box
-                    aria-hidden
-                    sx={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: 0.5,
-                      bgcolor: f.color,
-                      border: 1,
-                      borderColor: "divider",
-                      flexShrink: 0,
-                    }}
-                  />
+                  {FERTILIZER_SPRITE_CELL[id] ? (
+                    <SpriteSheetIcon
+                      sheet={ICON_ATLAS}
+                      col={FERTILIZER_SPRITE_CELL[id]!.col}
+                      row={FERTILIZER_SPRITE_CELL[id]!.row}
+                      size={20}
+                      bordered
+                    />
+                  ) : (
+                    <Box
+                      aria-hidden
+                      sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 0.5,
+                        bgcolor: f.color,
+                        border: 1,
+                        borderColor: "divider",
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
                   <Typography variant="caption" fontWeight={700} noWrap sx={{ minWidth: 0 }}>
                     {f.name}
                   </Typography>
@@ -207,19 +219,31 @@ export function ShopPanel({ game, onApply }: Props) {
             return (
               <Paper key={id} elevation={0} variant="outlined" sx={{ p: 1 }}>
                 <Stack direction="row" alignItems="center" gap={0.75} sx={{ mb: 0.5 }}>
-                  <Box
-                    aria-hidden
-                    sx={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      bgcolor: def.color,
-                      border: 1,
-                      borderColor: "divider",
-                      flexShrink: 0,
-                      opacity: locked ? 0.55 : 1,
-                    }}
-                  />
+                  {SEED_SPRITE_CELL[id] ? (
+                    <Box sx={{ opacity: locked ? 0.55 : 1 }}>
+                      <SpriteSheetIcon
+                        sheet={ICON_ATLAS}
+                        col={SEED_SPRITE_CELL[id]!.col}
+                        row={SEED_SPRITE_CELL[id]!.row}
+                        size={20}
+                        bordered
+                      />
+                    </Box>
+                  ) : (
+                    <Box
+                      aria-hidden
+                      sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: "50%",
+                        bgcolor: def.color,
+                        border: 1,
+                        borderColor: "divider",
+                        flexShrink: 0,
+                        opacity: locked ? 0.55 : 1,
+                      }}
+                    />
+                  )}
                   <Typography variant="caption" fontWeight={700} noWrap sx={{ minWidth: 0 }}>
                     {def.name}
                     {locked ? " · locked" : ""}

@@ -1,5 +1,6 @@
 import { Box, Container, Stack, Typography } from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AdmurinCredits } from "./components/AdmurinCredits";
 import { BackpackInventory } from "./components/BackpackInventory";
 import { FertilizerPalette } from "./components/FertilizerPalette";
 import { GameBoard } from "./components/GameBoard";
@@ -158,8 +159,15 @@ export function App() {
 
   if (game.yearPhase === "winter") {
     return (
-      <Stack sx={{ flex: 1, minHeight: "100dvh", bgcolor: backgroundForYearPhase("winter") }}>
+      <Stack
+        sx={{
+          flex: 1,
+          minHeight: "100dvh",
+          bgcolor: backgroundForYearPhase("winter"),
+        }}
+      >
         <WinterGameScreen game={game} onChoice={onWinterChoice} onViewResults={onViewYearResults} />
+        <AdmurinCredits />
       </Stack>
     );
   }
@@ -257,6 +265,7 @@ export function App() {
           </Box>
         </Box>
       </Stack>
+      <AdmurinCredits />
     </Container>
   );
 }

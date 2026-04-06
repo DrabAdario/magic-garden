@@ -106,14 +106,14 @@ export const WINTER_EVENTS: WinterEventDef[] = [
     text: "A book falls open to a pressed leaf—between the pages, seeds rattle like tiny wishes.",
     choices: [
       {
-        label: "The big orange rounds (pumpkin)",
+        label: "Glossy cherries",
         healthDelta: 0,
         rationsDelta: 0,
         moneyDelta: 0,
         unlockSeedId: "pumpkin",
       },
       {
-        label: "The crookneck squash",
+        label: "Striped tangerines",
         healthDelta: 0,
         rationsDelta: 0,
         moneyDelta: 0,
@@ -126,18 +126,18 @@ export const WINTER_EVENTS: WinterEventDef[] = [
     text: "Behind the larder a mouse has stashed a crumpled packet—seeds still dry inside.",
     choices: [
       {
-        label: "Deep purple globes (eggplant)",
+        label: "Fuzzy peaches",
         healthDelta: 0,
         rationsDelta: 0,
         moneyDelta: 0,
         unlockSeedId: "eggplant",
       },
       {
-        label: "Orange-fleshed roots (sweet potato)",
+        label: "Ribbed pumpkins",
         healthDelta: 0,
         rationsDelta: 0,
         moneyDelta: 0,
-        unlockSeedId: "sweet_potato",
+        unlockSeedId: "potato",
       },
     ],
   },
@@ -146,14 +146,14 @@ export const WINTER_EVENTS: WinterEventDef[] = [
     text: "A peddler in furs taps the glass. 'Rare starts—one coin of kindness.' They press a damp bundle into your palm.",
     choices: [
       {
-        label: "Climbing vines (cucumber)",
+        label: "Dripping snotfruit vines",
         healthDelta: -2,
         rationsDelta: 0,
         moneyDelta: 0,
         unlockSeedId: "cucumber",
       },
       {
-        label: "Knobby tubers (potato)",
+        label: "Knobby pumpkins",
         healthDelta: -2,
         rationsDelta: 0,
         moneyDelta: 0,

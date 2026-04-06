@@ -1,8 +1,11 @@
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
+import type { ReactNode } from "react";
 import { FERTILIZER_ORDER, FERTILIZERS } from "../game/fertilizers";
+import { FERTILIZER_SPRITE_CELL, ICON_ATLAS, SEED_SPRITE_CELL } from "../game/spriteAssets";
 import { SEED_ORDER, SEEDS } from "../game/seeds";
 import { sidePanelPaperSx } from "./sidePanelStyles";
+import { SpriteSheetIcon } from "./SpriteSheetIcon";
 
 type Props = {
   money: number;
@@ -17,29 +20,44 @@ function Row({
   count,
   color,
   square,
+  icon,
 }: {
   label: string;
   count: number;
   color: string;
   square?: boolean;
+  icon?: ReactNode;
 }) {
   const empty = count <= 0;
   return (
     <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1} sx={{ py: 0.35 }}>
       <Stack direction="row" alignItems="center" gap={0.75} sx={{ minWidth: 0 }}>
         <Box
-          aria-hidden
           sx={{
+            opacity: empty ? 0.45 : 1,
             width: 14,
             height: 14,
             flexShrink: 0,
-            borderRadius: square ? 0.5 : "50%",
-            bgcolor: color,
-            border: 1,
-            borderColor: "divider",
-            opacity: empty ? 0.45 : 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
+        >
+          {icon ?? (
+            <Box
+              aria-hidden
+              sx={{
+                width: 14,
+                height: 14,
+                flexShrink: 0,
+                borderRadius: square ? 0.5 : "50%",
+                bgcolor: color,
+                border: 1,
+                borderColor: "divider",
+              }}
+            />
+          )}
+        </Box>
         <Typography
           variant="caption"
           color={empty ? "text.secondary" : "text.primary"}
@@ -121,7 +139,26 @@ export function BackpackInventory({
           {SEED_ORDER.map((id) => {
             const def = SEEDS[id];
             const n = cropBag[id] ?? 0;
-            return <Row key={`crop-${id}`} label={def.name} count={n} color={def.color} />;
+            const cell = SEED_SPRITE_CELL[id];
+            return (
+              <Row
+                key={`crop-${id}`}
+                label={def.name}
+                count={n}
+                color={def.color}
+                icon={
+                  cell ? (
+                    <SpriteSheetIcon
+                      sheet={ICON_ATLAS}
+                      col={cell.col}
+                      row={cell.row}
+                      size={14}
+                      bordered
+                    />
+                  ) : undefined
+                }
+              />
+            );
           })}
         </Stack>
 
@@ -134,7 +171,26 @@ export function BackpackInventory({
           {SEED_ORDER.map((id) => {
             const def = SEEDS[id];
             const n = seedInventory[id] ?? 0;
-            return <Row key={`seed-${id}`} label={def.name} count={n} color={def.color} />;
+            const cell = SEED_SPRITE_CELL[id];
+            return (
+              <Row
+                key={`seed-${id}`}
+                label={def.name}
+                count={n}
+                color={def.color}
+                icon={
+                  cell ? (
+                    <SpriteSheetIcon
+                      sheet={ICON_ATLAS}
+                      col={cell.col}
+                      row={cell.row}
+                      size={14}
+                      bordered
+                    />
+                  ) : undefined
+                }
+              />
+            );
           })}
         </Stack>
 
@@ -147,7 +203,27 @@ export function BackpackInventory({
           {FERTILIZER_ORDER.map((id) => {
             const f = FERTILIZERS[id];
             const n = fertilizerInventory[id] ?? 0;
-            return <Row key={`fert-${id}`} label={f.name} count={n} color={f.color} square />;
+            const cell = FERTILIZER_SPRITE_CELL[id];
+            return (
+              <Row
+                key={`fert-${id}`}
+                label={f.name}
+                count={n}
+                color={f.color}
+                square
+                icon={
+                  cell ? (
+                    <SpriteSheetIcon
+                      sheet={ICON_ATLAS}
+                      col={cell.col}
+                      row={cell.row}
+                      size={14}
+                      bordered
+                    />
+                  ) : undefined
+                }
+              />
+            );
           })}
         </Stack>
       </Box>

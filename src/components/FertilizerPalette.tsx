@@ -1,5 +1,7 @@
 import { Box, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { FERTILIZER_ORDER, FERTILIZERS } from "../game/fertilizers";
+import { FERTILIZER_SPRITE_CELL, ICON_ATLAS } from "../game/spriteAssets";
+import { SpriteSheetIcon } from "./SpriteSheetIcon";
 
 type Props = {
   selected: string | null;
@@ -25,18 +27,28 @@ export function FertilizerPalette({ selected, onSelect, inventory, disabled }: P
         {def ? (
           <>
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-              <Box
-                aria-hidden
-                sx={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 1,
-                  bgcolor: def.color,
-                  border: "1px solid",
-                  borderColor: "divider",
-                  flexShrink: 0,
-                }}
-              />
+              {selected && FERTILIZER_SPRITE_CELL[selected] ? (
+                <SpriteSheetIcon
+                  sheet={ICON_ATLAS}
+                  col={FERTILIZER_SPRITE_CELL[selected]!.col}
+                  row={FERTILIZER_SPRITE_CELL[selected]!.row}
+                  size={28}
+                  bordered
+                />
+              ) : (
+                <Box
+                  aria-hidden
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 1,
+                    bgcolor: def.color,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    flexShrink: 0,
+                  }}
+                />
+              )}
               <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 800 }}>
                 {def.name}
               </Typography>
@@ -121,17 +133,27 @@ export function FertilizerPalette({ selected, onSelect, inventory, disabled }: P
                   },
                 }}
               >
-                <Box
-                  aria-hidden
-                  sx={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: 0.75,
-                    bgcolor: f.color,
-                    border: "1px solid",
-                    borderColor: "divider",
-                  }}
-                />
+                {FERTILIZER_SPRITE_CELL[id] ? (
+                  <SpriteSheetIcon
+                    sheet={ICON_ATLAS}
+                    col={FERTILIZER_SPRITE_CELL[id]!.col}
+                    row={FERTILIZER_SPRITE_CELL[id]!.row}
+                    size={18}
+                    bordered
+                  />
+                ) : (
+                  <Box
+                    aria-hidden
+                    sx={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: 0.75,
+                      bgcolor: f.color,
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  />
+                )}
                 <Typography variant="body2" component="span" sx={{ fontWeight: 600 }}>
                   {f.name}{" "}
                   <Box component="span" sx={{ fontVariantNumeric: "tabular-nums" }}>

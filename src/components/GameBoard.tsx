@@ -1,7 +1,9 @@
 import { Box, Button, Typography } from "@mui/material";
 import { FERTILIZERS, fertilizerGrowthMult } from "../game/fertilizers";
+import { ICON_ATLAS, SEED_SPRITE_CELL } from "../game/spriteAssets";
 import { growthMultiplierAt, SEEDS } from "../game/seeds";
 import type { PlantedCell } from "../game/types";
+import { SpriteSheetIcon } from "./SpriteSheetIcon";
 
 type Props = {
   grid: (PlantedCell | null)[][];
@@ -63,6 +65,7 @@ export function GameBoard({
             const combinedMult =
               mult != null ? mult * fertMult : null;
             const seedColor = cell ? SEEDS[cell.seedId].color : undefined;
+            const seedSprite = cell ? SEED_SPRITE_CELL[cell.seedId] : undefined;
 
             const ariaLabel = (() => {
               if (selectedFertilizer) {
@@ -123,6 +126,26 @@ export function GameBoard({
                         transition: "height 0.2s ease",
                       }}
                     />
+                    {seedSprite && (
+                      <Box
+                        sx={{
+                          position: "relative",
+                          zIndex: 1,
+                          mt: 0.25,
+                          mb: 0.15,
+                          display: "flex",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <SpriteSheetIcon
+                          sheet={ICON_ATLAS}
+                          col={seedSprite.col}
+                          row={seedSprite.row}
+                          size={32}
+                          bordered
+                        />
+                      </Box>
+                    )}
                     <Typography
                       variant="caption"
                       sx={{

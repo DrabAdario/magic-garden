@@ -1,6 +1,8 @@
 import LockIcon from "@mui/icons-material/Lock";
 import { Box, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { ICON_ATLAS, SEED_SPRITE_CELL } from "../game/spriteAssets";
 import { SEED_ORDER, SEEDS } from "../game/seeds";
+import { SpriteSheetIcon } from "./SpriteSheetIcon";
 
 type Props = {
   selected: string;
@@ -39,18 +41,28 @@ export function SeedPalette({ selected, onSelect, inventory, unlockedSeeds, disa
         sx={{ p: 1.25, border: 1, borderColor: "divider" }}
       >
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-          <Box
-            aria-hidden
-            sx={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              bgcolor: detail.color,
-              border: "1px solid",
-              borderColor: "divider",
-              flexShrink: 0,
-            }}
-          />
+          {SEED_SPRITE_CELL[selected] ? (
+            <SpriteSheetIcon
+              sheet={ICON_ATLAS}
+              col={SEED_SPRITE_CELL[selected]!.col}
+              row={SEED_SPRITE_CELL[selected]!.row}
+              size={28}
+              bordered
+            />
+          ) : (
+            <Box
+              aria-hidden
+              sx={{
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                bgcolor: detail.color,
+                border: "1px solid",
+                borderColor: "divider",
+                flexShrink: 0,
+              }}
+            />
+          )}
           <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 800 }}>
             {detail.name}
           </Typography>
@@ -129,18 +141,30 @@ export function SeedPalette({ selected, onSelect, inventory, unlockedSeeds, disa
                 {locked && (
                   <LockIcon sx={{ fontSize: 16, opacity: 0.8 }} aria-hidden />
                 )}
-                <Box
-                  aria-hidden
-                  sx={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: "50%",
-                    bgcolor: def.color,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    opacity: locked ? 0.55 : 1,
-                  }}
-                />
+                {SEED_SPRITE_CELL[id] ? (
+                  <Box sx={{ opacity: locked ? 0.55 : 1, display: "flex" }}>
+                    <SpriteSheetIcon
+                      sheet={ICON_ATLAS}
+                      col={SEED_SPRITE_CELL[id]!.col}
+                      row={SEED_SPRITE_CELL[id]!.row}
+                      size={18}
+                      bordered
+                    />
+                  </Box>
+                ) : (
+                  <Box
+                    aria-hidden
+                    sx={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: "50%",
+                      bgcolor: def.color,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      opacity: locked ? 0.55 : 1,
+                    }}
+                  />
+                )}
                 <Typography variant="body2" component="span" sx={{ fontWeight: 600 }}>
                   {def.name}{" "}
                   <Box component="span" sx={{ fontVariantNumeric: "tabular-nums" }}>

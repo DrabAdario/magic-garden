@@ -39,15 +39,14 @@ export const SEED_ORDER: readonly string[] = [
   "cucumber",
   "squash",
   "potato",
-  "sweet_potato",
 ];
 
 export const SEEDS: Record<string, SeedDefinition> = {
   carrot: {
     id: "carrot",
-    name: "Carrot",
+    name: "Squash",
     description:
-      "A reliable root crop. Grows at a steady pace with no special grid effects—use it to fill space or learn the basics.",
+      "A sturdy squash for filling plots. Grows at a steady pace with no special grid effects—good for learning the ropes.",
     color: "#e67e22",
     growDurationMs: 1_000,
     sellPrice: 8,
@@ -55,9 +54,9 @@ export const SEEDS: Record<string, SeedDefinition> = {
   },
   tomato: {
     id: "tomato",
-    name: "Tomato",
+    name: "Apple",
     description:
-      "Vines that share the wealth. Each tomato speeds up plants in the four tiles directly next to it (up, down, left, right).",
+      "Crisp orchard energy. Each apple tree nudges plants in the four tiles next to it to grow a little faster.",
     color: "#c0392b",
     growDurationMs: 2_000,
     sellPrice: 14,
@@ -66,9 +65,9 @@ export const SEEDS: Record<string, SeedDefinition> = {
   },
   sunflower: {
     id: "sunflower",
-    name: "Sunflower",
+    name: "Orange",
     description:
-      "Soaks up sunlight and shares it. Other plants within two steps (Manhattan distance) grow a bit faster—great for clustered gardens.",
+      "Sun-bright citrus. Other plants within two steps (Manhattan distance) catch a little extra warmth and grow faster.",
     color: "#f1c40f",
     growDurationMs: 2_000,
     sellPrice: 16,
@@ -77,9 +76,9 @@ export const SEEDS: Record<string, SeedDefinition> = {
   },
   bean: {
     id: "bean",
-    name: "Bean",
+    name: "Pear",
     description:
-      "Climbs when neighbors finish. When a plant directly next to a bean finishes growing, the bean gets a burst of progress—chains can cascade.",
+      "Branching and patient. When a plant directly next to a pear finishes growing, the pear gets a burst of progress—chains can cascade.",
     color: "#27ae60",
     growDurationMs: 2_000,
     sellPrice: 12,
@@ -89,9 +88,9 @@ export const SEEDS: Record<string, SeedDefinition> = {
   },
   pumpkin: {
     id: "pumpkin",
-    name: "Pumpkin",
+    name: "Cherry",
     description:
-      "Heavy and hungry for space. Slows plants directly next to it, but harvests for a high price—place with care.",
+      "Dense and demanding. Slows plants directly next to it, but sells for a premium—place with care.",
     color: "#d35400",
     growDurationMs: 2_000,
     sellPrice: 28,
@@ -101,9 +100,9 @@ export const SEEDS: Record<string, SeedDefinition> = {
   },
   eggplant: {
     id: "eggplant",
-    name: "Eggplant",
+    name: "Peach",
     description:
-      "Deep purple and patient. Gives a modest boost to orthogonal neighbors—lighter touch than a tomato, steady in tight rows.",
+      "Soft color, steady help. Gives a modest boost to orthogonal neighbors—lighter touch than an apple, great in tight rows.",
     color: "#6c3483",
     growDurationMs: 2_200,
     sellPrice: 18,
@@ -113,9 +112,9 @@ export const SEEDS: Record<string, SeedDefinition> = {
   },
   cucumber: {
     id: "cucumber",
-    name: "Cucumber",
+    name: "Snotfruit",
     description:
-      "Quick-climbing vines. Grows fast and nudges neighbors along—good for filling edges and racing the season.",
+      "A… distinctive cultivar. Grows fast and gives neighbors a slimy little nudge—perfect for racing the season.",
     color: "#58d68d",
     growDurationMs: 1_800,
     sellPrice: 11,
@@ -125,9 +124,9 @@ export const SEEDS: Record<string, SeedDefinition> = {
   },
   squash: {
     id: "squash",
-    name: "Squash",
+    name: "Tangerine",
     description:
-      "Spreading and heavy. Neighboring plants grow a bit slower, but the harvest pays well—like a gentler pumpkin.",
+      "Bold and a bit heavy. Neighboring plants grow a bit slower, but the harvest pays well.",
     color: "#f39c12",
     growDurationMs: 2_400,
     sellPrice: 22,
@@ -137,26 +136,14 @@ export const SEEDS: Record<string, SeedDefinition> = {
   },
   potato: {
     id: "potato",
-    name: "Potato",
+    name: "Pumpkin",
     description:
-      "Understated tuber. No fancy grid tricks—just a fast cycle and solid coins for reliable plots.",
+      "Honest gourd energy. No fancy grid tricks—just a fast cycle and solid coins for reliable plots.",
     color: "#a569bd",
     growDurationMs: 1_500,
     sellPrice: 9,
     shopPrice: 14,
     unlockShopPrice: 82,
-  },
-  sweet_potato: {
-    id: "sweet_potato",
-    name: "Sweet potato",
-    description:
-      "Stores energy below ground and shares a little sun: plants one step away get a tiny growth bump.",
-    color: "#e59866",
-    growDurationMs: 2_000,
-    sellPrice: 15,
-    shopPrice: 21,
-    unlockShopPrice: 100,
-    aura: { radius: 1, growthBonus: 0.05 },
   },
 };
 
