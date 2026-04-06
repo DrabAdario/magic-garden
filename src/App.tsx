@@ -1,5 +1,6 @@
-import { Container, Stack, Typography } from "@mui/material";
+import { Box, Container, Stack, Typography } from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BackpackInventory } from "./components/BackpackInventory";
 import { FertilizerPalette } from "./components/FertilizerPalette";
 import { GameBoard } from "./components/GameBoard";
 import { Hud } from "./components/Hud";
@@ -151,13 +152,13 @@ export function App() {
 
   return (
     <Container
-      maxWidth="sm"
+      maxWidth="lg"
       disableGutters
       sx={{
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        px: 1.5,
+        px: { xs: 1.5, sm: 2 },
         py: 1.5,
         pb: "max(12px, env(safe-area-inset-bottom))",
         minHeight: "100dvh",
@@ -167,7 +168,6 @@ export function App() {
       <Stack spacing={1.5} sx={{ flex: 1, minHeight: 0 }}>
         <Hud
           yearPhase={game.yearPhase}
-          money={game.money}
           seasonEarnings={game.seasonEarnings}
           cropBagTotal={bagTotal}
           harvestsRemaining={game.harvestsRemaining}
@@ -185,34 +185,63 @@ export function App() {
           onApply={applyShop}
         />
         <StarterSeedDialog seedId={starterGiftSeedId} onClose={() => setStarterGiftSeedId(null)} />
-        <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
-          <strong>Spring</strong> (20) → <strong>summer</strong> (25) → <strong>fall</strong> (10) →{" "}
-          <strong>winter</strong>. Each harvest uses one tick; sell anytime for shop coins.{" "}
-          <strong>End season early</strong> skips to the next phase.
-        </Typography>
-        <GameBoard
-          grid={game.grid}
-          selectedSeed={selectedSeed}
-          selectedFertilizer={selectedFertilizer}
-          onCellTap={onCellTap}
-          paused={game.paused}
-          seasonEnded={game.seasonEnded}
-        />
-        <SeedPalette
-          selected={selectedSeed}
-          onSelect={(id) => {
-            setSelectedFertilizer(null);
-            setSelectedSeed(id);
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: 1.5,
+            flex: 1,
+            minHeight: 0,
+            alignItems: { xs: "stretch", md: "flex-start" },
           }}
-          inventory={game.inventory}
-          disabled={game.paused}
-        />
-        <FertilizerPalette
-          selected={selectedFertilizer}
-          onSelect={setSelectedFertilizer}
-          inventory={game.fertilizerInventory}
-          disabled={game.paused}
-        />
+        >
+          <Stack
+            spacing={1.5}
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              minHeight: 0,
+              order: { xs: 2, md: 0 },
+            }}
+          >
+            <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
+              <strong>Spring</strong> (20) → <strong>summer</strong> (25) → <strong>fall</strong> (10) →{" "}
+              <strong>winter</strong>. Each harvest uses one tick; sell crops from the bar. Backpack shows
+              everything you carry. <strong>End season early</strong> skips to the next phase.
+            </Typography>
+            <GameBoard
+              grid={game.grid}
+              selectedSeed={selectedSeed}
+              selectedFertilizer={selectedFertilizer}
+              onCellTap={onCellTap}
+              paused={game.paused}
+              seasonEnded={game.seasonEnded}
+            />
+            <SeedPalette
+              selected={selectedSeed}
+              onSelect={(id) => {
+                setSelectedFertilizer(null);
+                setSelectedSeed(id);
+              }}
+              inventory={game.inventory}
+              disabled={game.paused}
+            />
+            <FertilizerPalette
+              selected={selectedFertilizer}
+              onSelect={setSelectedFertilizer}
+              inventory={game.fertilizerInventory}
+              disabled={game.paused}
+            />
+          </Stack>
+          <Box sx={{ order: { xs: 1, md: 0 }, width: { md: "auto" } }}>
+            <BackpackInventory
+              money={game.money}
+              cropBag={game.cropBag}
+              seedInventory={game.inventory}
+              fertilizerInventory={game.fertilizerInventory}
+            />
+          </Box>
+        </Box>
       </Stack>
     </Container>
   );

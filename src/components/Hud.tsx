@@ -15,7 +15,6 @@ const PHASE_LABEL: Record<YearPhase, string> = {
 
 type Props = {
   yearPhase: YearPhase;
-  money: number;
   seasonEarnings: number;
   cropBagTotal: number;
   harvestsRemaining: number;
@@ -29,7 +28,6 @@ type Props = {
 
 export function Hud({
   yearPhase,
-  money,
   seasonEarnings,
   cropBagTotal,
   harvestsRemaining,
@@ -67,13 +65,7 @@ export function Hud({
           {PHASE_LABEL[yearPhase]}
         </Typography>
         <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-          Coins <strong>{money}</strong>
-        </Typography>
-        <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
           Year <strong>{seasonEarnings}</strong>
-        </Typography>
-        <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-          Bag <strong>{cropBagTotal}</strong>
         </Typography>
         <Typography
           variant="body2"
