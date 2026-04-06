@@ -13,18 +13,9 @@ export interface FertilizerDefinition {
   harvestExtraCount?: number;
 }
 
-export const FERTILIZER_ORDER: readonly string[] = ["sprout_rush", "bounty_blend", "miracle_mix"];
+export const FERTILIZER_ORDER: readonly string[] = ["bounty_blend", "miracle_mix"];
 
 export const FERTILIZERS: Record<string, FertilizerDefinition> = {
-  sprout_rush: {
-    id: "sprout_rush",
-    name: "Sprout Rush",
-    description:
-      "Fast-release nitrogen. The plant grows noticeably faster until you harvest it.",
-    color: "#5dade2",
-    shopPrice: 14,
-    growthSpeedMult: 1.35,
-  },
   bounty_blend: {
     id: "bounty_blend",
     name: "Bounty Blend",
@@ -38,11 +29,10 @@ export const FERTILIZERS: Record<string, FertilizerDefinition> = {
     id: "miracle_mix",
     name: "Miracle Mix",
     description:
-      "Premium all-in-one: a modest growth boost and one extra crop at harvest.",
+      "Premium blend: two extra units at harvest—same growth pace as unfertilized plants.",
     color: "#48c9b0",
     shopPrice: 40,
-    growthSpeedMult: 1.18,
-    harvestExtraCount: 1,
+    harvestExtraCount: 2,
   },
 };
 

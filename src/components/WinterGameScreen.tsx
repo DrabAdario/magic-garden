@@ -5,14 +5,17 @@ import {
   Box,
   Button,
   Container,
+  Divider,
   LinearProgress,
   Paper,
   Stack,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { HEALTH_MAX, WINTER_DAY_COUNT } from "../game/winterConstants";
 import { getWinterEvent } from "../game/winterEvents";
+import { buildWinterOutcome, type WinterOutcomeSnapshot } from "../game/winterOutcome";
 import type { GameState } from "../game/types";
 
 type Props = {
@@ -22,8 +25,16 @@ type Props = {
 };
 
 export function WinterGameScreen({ game, onChoice, onViewResults }: Props) {
+  const [outcome, setOutcome] = useState<WinterOutcomeSnapshot | null>(null);
   const ev = getWinterEvent(game.winterEventId);
   const done = game.winterMinigameComplete || game.winterFailed;
+
+  const handleChoice = (idx: 0 | 1) => {
+    if (!ev) return;
+    const ch = ev.choices[idx];
+    setOutcome(buildWinterOutcome(ch, game.unlockedSeeds));
+    onChoice(idx);
+  };
 
   return (
     <Container
@@ -84,7 +95,36 @@ export function WinterGameScreen({ game, onChoice, onViewResults }: Props) {
           color={game.health < 30 ? "error" : "primary"}
         />
 
-        {game.winterFailed && (
+        {outcome && (
+          <Box
+            aria-live="polite"
+            sx={{
+              py: 1,
+              mb: 1,
+              px: 0,
+            }}
+          >
+            <Typography variant="overline" color="primary.light" sx={{ fontWeight: 700, letterSpacing: 0.08 }}>
+              What happened
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, mb: 1.25, lineHeight: 1.5 }}>
+              You chose: <strong>{outcome.choiceLabel}</strong>
+            </Typography>
+            <Stack component="ul" spacing={0.75} sx={{ m: 0, pl: 2.25, listStyle: "disc" }}>
+              {outcome.lines.map((line, i) => (
+                <Typography key={i} component="li" variant="body1" sx={{ lineHeight: 1.55 }}>
+                  {line}
+                </Typography>
+              ))}
+            </Stack>
+            <Divider sx={{ my: 2 }} />
+            <Button variant="contained" color="primary" size="large" fullWidth onClick={() => setOutcome(null)}>
+              Continue
+            </Button>
+          </Box>
+        )}
+
+        {!outcome && game.winterFailed && (
           <Box sx={{ textAlign: "center", py: 1 }}>
             <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 700 }}>
               The cold won this time
@@ -98,7 +138,7 @@ export function WinterGameScreen({ game, onChoice, onViewResults }: Props) {
           </Box>
         )}
 
-        {game.winterMinigameComplete && !game.winterFailed && (
+        {!outcome && game.winterMinigameComplete && !game.winterFailed && (
           <Box sx={{ textAlign: "center", py: 1 }}>
             <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 700 }}>
               You survived the winter
@@ -112,7 +152,7 @@ export function WinterGameScreen({ game, onChoice, onViewResults }: Props) {
           </Box>
         )}
 
-        {!done && ev && (
+        {!outcome && !done && ev && (
           <>
             <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
               {ev.text}
@@ -123,7 +163,7 @@ export function WinterGameScreen({ game, onChoice, onViewResults }: Props) {
                 color="primary"
                 size="large"
                 fullWidth
-                onClick={() => onChoice(0)}
+                onClick={() => handleChoice(0)}
               >
                 {ev.choices[0].label}
               </Button>
@@ -132,7 +172,7 @@ export function WinterGameScreen({ game, onChoice, onViewResults }: Props) {
                 color="inherit"
                 size="large"
                 fullWidth
-                onClick={() => onChoice(1)}
+                onClick={() => handleChoice(1)}
               >
                 {ev.choices[1].label}
               </Button>

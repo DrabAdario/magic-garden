@@ -178,30 +178,18 @@ describe("fertilizers", () => {
   it("buyFertilizer deducts coins and adds bags", () => {
     let s = createInitialState("carrot");
     s = { ...s, money: 100 };
-    s = buyFertilizer(s, "sprout_rush", 1);
-    expect(s.fertilizerInventory.sprout_rush).toBe(1);
-    expect(s.money).toBe(100 - FERTILIZERS.sprout_rush.shopPrice);
+    s = buyFertilizer(s, "bounty_blend", 1);
+    expect(s.fertilizerInventory.bounty_blend).toBe(1);
+    expect(s.money).toBe(100 - FERTILIZERS.bounty_blend.shopPrice);
   });
 
   it("applyFertilizer attaches to immature plant and consumes a bag", () => {
     let s = createInitialState("carrot");
     s = placeSeed(s, 0, 0, "carrot");
-    s = { ...s, fertilizerInventory: { sprout_rush: 1 } };
-    s = applyFertilizer(s, 0, 0, "sprout_rush");
-    expect(s.grid[0][0]?.fertilizerId).toBe("sprout_rush");
-    expect(s.fertilizerInventory.sprout_rush).toBeUndefined();
-  });
-
-  it("sprout rush increases growth rate", () => {
-    let base = createInitialState("carrot");
-    base = placeSeed(base, 0, 0, "carrot");
-    let fast = createInitialState("carrot");
-    fast = placeSeed(fast, 0, 0, "carrot");
-    fast = { ...fast, fertilizerInventory: { sprout_rush: 1 } };
-    fast = applyFertilizer(fast, 0, 0, "sprout_rush");
-    base = tick(base, 400);
-    fast = tick(fast, 400);
-    expect(fast.grid[0][0]!.progress).toBeGreaterThan(base.grid[0][0]!.progress);
+    s = { ...s, fertilizerInventory: { bounty_blend: 1 } };
+    s = applyFertilizer(s, 0, 0, "bounty_blend");
+    expect(s.grid[0][0]?.fertilizerId).toBe("bounty_blend");
+    expect(s.fertilizerInventory.bounty_blend).toBeUndefined();
   });
 
   it("bounty blend adds extra crop on harvest", () => {
